@@ -1,0 +1,43 @@
+option optimize_for = SPEED;
+option java_package = "pipe.election";
+
+// enquire about the state of the leader/election
+message LeaderStatus {
+   required LeaderQuery action = 1;
+   optional LeaderState state = 2;
+   optional string leader_host= 3;
+   optional int32 leader_id = 4;
+   
+   enum LeaderState {
+      LEADERUNKNOWN = 1;
+      LEADERALIVE = 2;
+      LEADERDEAD = 3;
+   }
+
+   enum LeaderQuery {
+      WHOISTHELEADER = 1;
+      THELEADERIS = 2;
+   }
+   
+   
+}
+
+message RaftMessage {
+  required ElectionAction action = 1;
+  optional VoteRequestMsg request_vote = 2;
+  optional string leader_host= 3;
+  optional int32 leader_id = 4;
+  required int32 term = 5;
+  
+  enum ElectionAction {
+    REQUESTVOTE = 1;
+    LEADER = 2;
+    VOTE=3;
+  }
+}
+//Vote request message with candidate ID
+message VoteRequestMsg {
+  optional int32 candidate_id = 1;
+  optional bool vote_granted = 2;
+  optional int32 voter_id = 3;
+}

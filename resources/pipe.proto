@@ -1,0 +1,27 @@
+option optimize_for = SPEED;
+option java_package = "routing";
+
+import "common.proto";
+import "monitor.proto";
+
+message CommandMessage {
+   required Header header = 1;
+
+   optional Task task= 2;
+   
+   oneof payload {
+      // a client (external) sanity check for testing
+      bool ping = 3;
+
+      string message = 4;
+      
+      Failure err = 5;
+
+      bytes fileContent =6;
+
+   }
+   
+   //Added this field to be populated by our server
+   optional ClusterMonitor monitorMsg = 7;
+   
+}

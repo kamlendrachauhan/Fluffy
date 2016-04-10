@@ -1,0 +1,111 @@
+
+option optimize_for = SPEED;
+option java_package = "pipe.work";
+
+import "common.proto";
+import "election.proto";
+import "monitor.proto";
+
+message WorkState {
+   required int32 enqueued = 1;
+   required int32 processed = 2;
+}
+
+message Heartbeat {
+   required WorkState state = 1;
+}
+
+/**
+ * description of the work
+ */
+ 
+/* Commented as we need the same task as common.proto Task
+message Task {  
+    required int64 series_id = 1;
+    required int32 seq_id = 2;
+}
+*/
+message RoutingConf {
+  repeated string nodeIp = 1;
+  repeated string nodeId = 2;
+}
+
+
+
+message WorkSteal {
+enum StealType {
+     	STEAL_REQUEST = 1;
+	STEAL_RESPONSE = 2;
+    }
+required StealType stealtype = 1;
+
+}
+// These are messages to keep the network running (not to perform work)
+message WorkMessage {
+   required Header header = 1;
+   required int64 secret = 2;
+   optional RoutingConf routingEntries = 11;
+   optional bool isProcessed = 13;
+   optional string requestId = 14;
+   optional WorkSteal steal = 18;
+   enum Worktype {
+      LEADER_WRITE = 1;
+      SLAVE_WRITTEN = 2;
+      LEADER_READ = 3;
+      SLAVE_READ_DONE = 4;
+   }
+
+	
+   
+   optional Worktype worktype = 15;
+   required StateOfLeader stateOfLeader = 16;
+   
+   enum StateOfLeader {
+      LEADERALIVE = 1;
+      LEADERDEAD = 2;
+      LEADERUNKNOWN = 3;
+      LEADERKNOWN = 4;
+   }
+
+/*
+ * ============Message Type============
+ * Work message types are defined here
+ */
+   enum MessageType{
+   	    PING = 1;
+   	    NEWNODE =2;
+   	    FLAGROUTING = 3;
+   	    
+   }
+   /**
+    * The actions (request or response) is
+    * implicit through which data structure is in the payload.
+    */ 
+
+   oneof payload {
+      Failure err = 3;
+      
+      // a sanity check for testing
+      bool ping = 4;
+
+      // status updates between adjacent workers
+      Heartbeat beat = 5;
+
+      Task task = 6;
+      WorkState state = 7;
+      LeaderStatus leader = 8;
+
+      bool newNode = 9;
+      bool flagRouting = 10;
+      
+      //RaftMessage
+      RaftMessage raftMessage=17;
+      
+     //Added this field to be populated by our server
+     ClusterMonitor monitorMsg = 19;
+ 
+   }
+   //repeated int32 nextNodeIds = 20;
+   optional bool isStolen = 20;
+ 
+}
